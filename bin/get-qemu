@@ -16,7 +16,7 @@ install_artix() {
     echo "==> Installing packages..."
     sudo pacman -S --needed --noconfirm \
         qemu-desktop virt-manager virt-viewer dnsmasq vde2 \
-        bridge-utils openbsd-netcat libvirt libvirt-runit libguestfs
+        openbsd-netcat libvirt libvirt-runit libguestfs
 }
 
 install_void() {
