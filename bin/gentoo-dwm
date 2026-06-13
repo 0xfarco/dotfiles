@@ -96,7 +96,6 @@ remove_suckless() {
     rm -rf \
         "$SRC_DIR/dwm" \
         "$SRC_DIR/dmenu" \
-        "$SRC_DIR/st" \
         "$SRC_DIR/slstatus"
 
 	rm $HOME/.xinitrc
