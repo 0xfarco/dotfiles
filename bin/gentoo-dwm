@@ -92,14 +92,14 @@ remove_suckless() {
                 cd "$dir"
 
                 sudo make uninstall 2>/dev/null || true
-                make clean 2>/dev/null || true
+                sudo make clean 2>/dev/null || true
             )
         fi
 
         sudo rm -f "/usr/local/bin/$name"
     done
 
-    rm -rf \
+    sudo rm -rf \
         "$SRC_DIR/dwm" \
         "$SRC_DIR/dmenu" \
         "$SRC_DIR/slstatus"
