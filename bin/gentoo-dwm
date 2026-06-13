@@ -1,0 +1,124 @@
+#!/bin/bash
+
+set -e
+
+ACTION="$1"
+
+SRC_DIR="$HOME/.local/src"
+
+DWM_REPO="https://github.com/0xfarco/dwm"
+DMENU_REPO="https://github.com/0xfarco/dmenu"
+ST_REPO="https://github.com/0xfarco/st"
+SLSTATUS_REPO="https://github.com/0xfarco/slstatus"
+
+install_packages() {
+    sudo emerge --ask=n \
+        x11-base/xorg-server \
+        x11-apps/xinit \
+        x11-libs/libX11 \
+        x11-libs/libXft \
+        x11-libs/libXinerama \
+        media-gfx/feh \
+        x11-misc/picom \
+        x11-misc/sxhkd \
+        media-fonts/dejavu \
+        media-fonts/noto
+}
+
+build_suckless() {
+
+    mkdir -p "$SRC_DIR"
+
+    declare -A REPOS=(
+        [dwm]="$DWM_REPO"
+        [dmenu]="$DMENU_REPO"
+        [st]="$ST_REPO"
+        [slstatus]="$SLSTATUS_REPO"
+    )
+
+    for name in "${!REPOS[@]}"; do
+
+        if ifinstalled "$name"; then
+            echo "$name is already installed, skipping."
+            continue
+        fi
+
+        repo="${REPOS[$name]}"
+        dest="$SRC_DIR/$name"
+
+        rm -rf "$dest"
+
+        git clone "$repo" "$dest"
+
+        (
+            cd "$dest"
+            make
+            sudo make clean install
+        )
+    done
+}
+
+setup_xinitrc() {
+
+cat > "$HOME/.xinitrc" <<EOF
+slstatus &
+picom &
+feh --bg-scale ~/Pictures/wallpaper/gentoo.png &
+sxhkd -c ~/.config/sxhkd/sxhkdrc &
+exec dwm
+EOF
+
+}
+
+remove_suckless() {
+
+    for name in dwm dmenu slstatus; do
+
+        if ! ifinstalled "$name"; then
+            echo "$name is not installed, skipping."
+            continue
+        fi
+
+        dir="$SRC_DIR/$name"
+
+        if [[ -d "$dir" ]]; then
+            (
+                cd "$dir"
+
+                sudo make uninstall 2>/dev/null || true
+                make clean 2>/dev/null || true
+            )
+        fi
+
+        sudo rm -f "/usr/local/bin/$name"
+    done
+
+    rm -rf \
+        "$SRC_DIR/dwm" \
+        "$SRC_DIR/dmenu" \
+        "$SRC_DIR/st" \
+        "$SRC_DIR/slstatus"
+
+	rm $HOME/.xinitrc
+}
+
+case "$ACTION" in
+
+    install)
+        install_packages
+        build_suckless
+        setup_xinitrc
+        echo "DWM installed."
+        ;;
+
+    remove)
+        remove_suckless
+        echo "DWM removed."
+        ;;
+
+    *)
+        echo "Usage: $0 {install|remove}"
+        exit 1
+        ;;
+
+esac

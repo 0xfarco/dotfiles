@@ -1,0 +1,82 @@
+#!/bin/bash
+
+set -e
+
+ACTION="$1"
+
+install_packages() {
+
+    if ifinstalled i3; then
+        echo "i3 is already installed, skipping package installation."
+        return
+    fi
+
+    sudo emerge --ask=n \
+        x11-base/xorg-server \
+        x11-apps/xinit \
+        x11-wm/i3 \
+        x11-misc/i3status \
+        x11-misc/dmenu \
+        x11-misc/sxhkd \
+        x11-misc/picom \
+        media-gfx/feh \
+        media-fonts/dejavu \
+        media-fonts/noto
+}
+
+setup_xinitrc() {
+
+cat > "$HOME/.xinitrc" <<EOF
+picom &
+feh --bg-scale ~/Pictures/wallpaper/gentoo.png &
+sxhkd -c ~/.config/sxhkd/sxhkdrc &
+exec i3
+EOF
+
+}
+
+setup_i3_config() {
+
+    mkdir -p "$HOME/.config/i3"
+
+    # Copy config from repository
+    cp -r ../i3 "$HOME/.config/"
+    cp ../.i3status.conf "$HOME/"
+
+}
+
+remove_i3() {
+	for name in i3 i3status; do
+	    if ! ifinstalled $name; then
+    	    echo "$name is not installed, skipping removal."
+        	continue
+    	fi
+
+    	sudo emerge --depclean $name || true
+	done
+
+	rm -rf $HOME/.config/i3
+	rm $HOME/.i3status.conf
+	rm $HOME/.xinitrc
+}
+
+case "$ACTION" in
+
+    install)
+        install_packages
+		setup_i3_config
+        setup_xinitrc
+        echo "i3 installed."
+        ;;
+
+    remove)
+        remove_i3
+        echo "i3 removed."
+        ;;
+
+    *)
+        echo "Usage: $0 {install|remove}"
+        exit 1
+        ;;
+
+esac
