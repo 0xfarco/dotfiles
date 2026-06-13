@@ -5,6 +5,7 @@ set -e
 ACTION="$1"
 
 SRC_DIR="$HOME/.local/src"
+DWM_DESKTOP_FILE="../dwm.desktop"
 
 DWM_REPO="https://github.com/0xfarco/dwm"
 DMENU_REPO="https://github.com/0xfarco/dmenu"
@@ -56,6 +57,8 @@ build_suckless() {
             sudo make clean install
         )
     done
+
+	sudo install -Dm644 "$DWM_DESKTOP_FILE" /usr/share/xsessions/dwm.desktop
 }
 
 setup_xinitrc() {
@@ -99,6 +102,7 @@ remove_suckless() {
         "$SRC_DIR/slstatus"
 
 	rm $HOME/.xinitrc
+	sudo rm /usr/share/xsessions/dwm.desktop
 }
 
 case "$ACTION" in
