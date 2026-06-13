@@ -46,7 +46,7 @@ setup_i3_config() {
 }
 
 remove_i3() {
-	for name in i3 i3status; do
+	for name in i3 i3status dmenu; do
 	    if ! ifinstalled $name; then
     	    echo "$name is not installed, skipping removal."
         	continue
