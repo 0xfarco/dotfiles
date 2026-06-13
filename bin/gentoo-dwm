@@ -4,7 +4,7 @@ set -e
 
 ACTION="$1"
 
-SRC_DIR="$HOME/.local/src"
+SRC_DIR="/usr/local/src"
 DWM_DESKTOP_FILE="../dwm.desktop"
 
 DWM_REPO="https://github.com/0xfarco/dwm"
@@ -28,7 +28,10 @@ install_packages() {
 
 build_suckless() {
 
-    mkdir -p "$SRC_DIR"
+	if [[ ! -d "$SRC_DIR" ]]; then
+        echo "Creating $SRC_DIR..."
+        sudo mkdir -p "$SRC_DIR"
+    fi
 
     declare -A REPOS=(
         [dwm]="$DWM_REPO"
@@ -49,11 +52,11 @@ build_suckless() {
 
         rm -rf "$dest"
 
-        git clone "$repo" "$dest"
+        sudo git clone "$repo" "$dest"
 
         (
             cd "$dest"
-            make
+            sudo make
             sudo make clean install
         )
     done
