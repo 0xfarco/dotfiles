@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Ensure eselect-repository is installed
+if ! command -v eselect-repository >/dev/null 2>&1; then
+    echo "Installing app-eselect/eselect-repository..."
+    emerge --ask=n app-eselect/eselect-repository
+fi
+
+# Enable the GURU repository if not already enabled
+if eselect repository list | grep -q '^guru'; then
+    echo "GURU repository is already enabled."
+else
+    echo "Enabling GURU repository..."
+    eselect repository enable guru
+fi
+
+# Sync repositories
+echo "Syncing repositories..."
+emaint sync -r guru
+
+echo "Done."
