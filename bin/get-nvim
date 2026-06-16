@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+NVIM_ARCHIVE="nvim-linux-x86_64.tar.gz"
+NVIM_URL="https://github.com/neovim/neovim/releases/latest/download/${NVIM_ARCHIVE}"
+INSTALL_DIR="/opt/nvim-linux-x86_64"
+PATH_LINE='export PATH="$PATH:/opt/nvim-linux-x86_64/bin"'
+
+echo "Downloading Neovim..."
+curl -LO "$NVIM_URL"
+
+echo "Removing old installation (if present)..."
+sudo rm -rf "$INSTALL_DIR"
+
+echo "Installing Neovim..."
+sudo tar -C /opt -xzf "$NVIM_ARCHIVE"
+
+echo "Cleaning up..."
+rm -f "$NVIM_ARCHIVE"
+
+# Detect shell config file
+SHELL_CONFIG="$HOME/.bashrc"
+if [[ "${SHELL:-}" == *"zsh" ]]; then
+    SHELL_CONFIG="$HOME/.zshrc"
+fi
+
+echo "Updating PATH in $SHELL_CONFIG..."
+if ! grep -Fxq "$PATH_LINE" "$SHELL_CONFIG"; then
+    echo "" >> "$SHELL_CONFIG"
+    echo "$PATH_LINE" >> "$SHELL_CONFIG"
+fi
+
+echo
+echo "Neovim installed successfully."
+echo "Run the following command to load the updated PATH:"
+echo "  source \"$SHELL_CONFIG\""
+echo
+echo "Verify installation with:"
+echo "  nvim --version"
