@@ -103,3 +103,6 @@
          (get-buffer-window (vterm)))))))
 
 (global-set-key (kbd "C-c v") #'my/vterm-toggle)
+(global-set-key (kbd "C-c c c") #'compile)
+(global-set-key (kbd "C-c c r") #'recompile)
+
