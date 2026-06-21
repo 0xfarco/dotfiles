@@ -28,6 +28,9 @@ super + s ; a
 super + a ; b 
 	$BROWSER
 
+super + a ; i 
+	$INTERNET
+
 super + a ; w
 	camtoggle
 
