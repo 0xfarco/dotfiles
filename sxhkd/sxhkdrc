@@ -46,3 +46,9 @@ super + a ; e ; d
 super + a ; e ; e
 	fmacs
 
+super + s ; t ; i
+        picom-trans -c +10
+
+super + s ; t ; d
+        picom-trans -c -10
+
