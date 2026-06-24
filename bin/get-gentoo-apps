@@ -40,6 +40,8 @@ packages=(
 	sci-calculators/qalculate-gtk
 	net-p2p/qbittorrent
 	dev-util/github-cli
+	x11-apps/xwininfo
+	x11-apps/xprop
 )
 
 echo "Adding package.accept_keywords entries..."
