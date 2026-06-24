@@ -12,8 +12,8 @@ DMENU_REPO="https://github.com/0xfarco/dmenu"
 ST_REPO="https://github.com/0xfarco/st"
 SLSTATUS_REPO="https://github.com/0xfarco/slstatus"
 
-CUSTOM_BASH_PROFILE="./append_profile"
-CUSTOM_BASHRC="./append_bashrc"
+CUSTOM_BASH_PROFILE="../append_profile"
+CUSTOM_BASHRC="../append_bashrc"
 
 safe_append() {
     local file="$1"
@@ -90,7 +90,7 @@ build_suckless() {
 
     for name in "${!REPOS[@]}"; do
 
-        if ifinstalled "$name"; then
+        if command -v "$name"; then
             echo "$name is already installed, skipping."
             continue
         fi
@@ -128,7 +128,7 @@ remove_suckless() {
 
     for name in dwm dmenu slstatus; do
 
-        if ! ifinstalled "$name"; then
+        if ! command -v "$name"; then
             echo "$name is not installed, skipping."
             continue
         fi
