@@ -4,7 +4,7 @@ set -e
 
 ACTION="$1"
 
-SRC_DIR="/usr/local/src"
+SRC_DIR="$HOME/.local/src"
 DWM_DESKTOP_FILE="../dwm.desktop"
 
 DWM_REPO="https://github.com/0xfarco/dwm"
@@ -53,11 +53,11 @@ build_suckless() {
 
         rm -rf "$dest"
 
-        sudo git clone "$repo" "$dest"
+        git clone "$repo" "$dest"
 
         (
             cd "$dest"
-            sudo make
+            make
             sudo make clean install
         )
     done
@@ -100,7 +100,7 @@ remove_suckless() {
         sudo rm -f "/usr/local/bin/$name"
     done
 
-    sudo rm -rf \
+    rm -rf \
         "$SRC_DIR/dwm" \
         "$SRC_DIR/dmenu" \
         "$SRC_DIR/slstatus"
