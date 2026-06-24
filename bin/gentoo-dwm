@@ -78,7 +78,7 @@ build_suckless() {
 
 	if [[ ! -d "$SRC_DIR" ]]; then
         echo "Creating $SRC_DIR..."
-        sudo mkdir -p "$SRC_DIR"
+        mkdir -p "$SRC_DIR"
     fi
 
     declare -A REPOS=(
