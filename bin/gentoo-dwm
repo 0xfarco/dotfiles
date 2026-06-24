@@ -71,7 +71,10 @@ install_packages() {
         x11-misc/sxhkd \
         media-fonts/dejavu \
         media-fonts/noto \
-        media-fonts/iosevka
+        media-fonts/iosevka \
+        media-fonts/fontawesome \
+        media-fonts/noto-emoji \
+        sys-power/acpilight
 }
 
 build_suckless() {
