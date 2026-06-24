@@ -12,6 +12,53 @@ DMENU_REPO="https://github.com/0xfarco/dmenu"
 ST_REPO="https://github.com/0xfarco/st"
 SLSTATUS_REPO="https://github.com/0xfarco/slstatus"
 
+CUSTOM_BASH_PROFILE="./append_profile"
+CUSTOM_BASHRC="./append_bashrc"
+
+safe_append() {
+    local file="$1"
+    local content_file="$2"
+    local marker="# BEGIN custom additions"
+
+    [[ ! -f "$file" ]] && touch "$file"
+
+    echo ""
+
+    if ! grep -qF "$marker" "$file"; then
+        echo "+ Updating $file..."
+        {
+            echo "$marker"
+            cat "$content_file"
+            echo "# END custom additions"
+        } >> "$file"
+    else
+        echo "+ Already modified: $file"
+    fi
+}
+
+add_marker_block() {
+    local file="$1"
+    local marker="$2"
+    local block="$3"
+
+    [[ ! -f "$file" ]] && touch "$file"
+
+    if ! grep -qF "$marker" "$file"; then
+        echo "+ Adding $marker block to $file"
+        {
+            echo "$marker"
+            printf "%b\n" "$block"
+        } >> "$file"
+    else
+        echo "+ $marker block already present in $file"
+    fi
+}
+
+setup_shell_configs() {
+    safe_append "$HOME/.bash_profile" "$CUSTOM_BASH_PROFILE"
+    safe_append "$HOME/.bashrc" "$CUSTOM_BASHRC"
+}
+
 install_packages() {
     sudo emerge --ask=n \
         x11-base/xorg-server \
@@ -115,6 +162,7 @@ case "$ACTION" in
         install_packages
         build_suckless
         setup_xinitrc
+        setup_shell_configs
         echo "DWM installed."
         ;;
 
