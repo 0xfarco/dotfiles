@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+KEYWORDS_FILE="/etc/portage/package.accept_keywords/custom"
+PACKAGE_USE_DIR="/etc/portage/package.use"
+
+keywords=(
+    "media-gfx/nsxiv ~amd64"
+)
+
+declare -A use_flags=(
+	["app-text/zathura"]="synctex"
+	["media-video/pipewire"]="sound-server extra ffmpeg pipewire-alsa pulseaudio doc readline gstreamer gsettings roc v4l ssl libcamera"
+)
+
+packages=(
+	sys-power/tlp
+	sys-power/thermald
+    x11-libs/libnotify
+    x11-misc/dunst
+	x11-misc/slock
+    media-video/mpv
+    app-text/zathura
+    app-text/zathura-pdf-mupdf
+    media-gfx/flameshot
+    media-video/ffmpeg
+    media-video/ffmpegthumbnailer
+    x11-misc/xclip
+    x11-misc/slop
+    app-text/tesseract
+    sys-process/htop
+    app-office/calcurse
+    media-gfx/nsxiv
+	media-video/pipewire
+	media-libs/libpulse
+	media-sound/pulsemixer
+	net-news/newsboat
+	sci-libs/libqalculate
+	sci-calculators/qalculate-gtk
+	net-p2p/qbittorrent
+	dev-util/github-cli
+)
+
+echo "Adding package.accept_keywords entries..."
+
+for entry in "${keywords[@]}"; do
+    grep -qxF "$entry" "$KEYWORDS_FILE" 2>/dev/null ||
+        echo "$entry" | sudo tee -a "$KEYWORDS_FILE" >/dev/null
+done
+
+echo "Adding package.use entries..."
+
+for pkg in "${!use_flags[@]}"; do
+    use_file="$PACKAGE_USE_DIR/$(basename "$pkg")"
+    line="$pkg ${use_flags[$pkg]}"
+
+    grep -qxF "$line" "$use_file" 2>/dev/null ||
+        echo "$line" | sudo tee -a "$use_file" >/dev/null
+done
+
+echo "Checking installed packages..."
+
+to_install=()
+
+for pkg in "${packages[@]}"; do
+    if qlist -IC "$pkg" >/dev/null 2>&1; then
+        echo "Already installed: $pkg"
+    else
+        echo "Will install: $pkg"
+        to_install+=("$pkg")
+    fi
+done
+
+if [ ${#to_install[@]} -eq 0 ]; then
+    echo "All packages are already installed."
+else
+    echo "Installing missing packages..."
+    sudo emerge --ask "${to_install[@]}"
+fi
+
