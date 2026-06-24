@@ -23,7 +23,8 @@ install_packages() {
         x11-misc/picom \
         x11-misc/sxhkd \
         media-fonts/dejavu \
-        media-fonts/noto
+        media-fonts/noto \
+        media-fonts/iosevka
 }
 
 build_suckless() {
