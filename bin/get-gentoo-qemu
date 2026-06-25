@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+
+if [[ $EUID -ne 0 ]]; then
+    echo "This script must be run with sudo."
+    echo
+    echo "Usage:"
+    echo "  sudo $0"
+    exit 1
+fi
+
+set -euo pipefail
+
+echo "Creating Portage configuration..."
+
+mkdir -p /etc/portage/package.use
+mkdir -p /etc/portage/package.env
+mkdir -p /etc/portage/env
+
+cat > /etc/portage/package.use/qemu-stack <<'EOF'
+app-emulation/virt-manager gui policykit
+>=net-dns/dnsmasq-2.92_p2 script
+>=net-firewall/nftables-1.1.6 json python xtables
+
+>=net-misc/spice-gtk-0.42-r4 usbredir policykit
+
+app-emulation/qemu spice usbredir pipewire ncurses plugins sdl sdl-image ssh virtfs usb gtk opengl
+
+app-emulation/libvirt pcap virt-network fuse firewalld qemu policykit
+
+app-emulation/libguestfs vala introspection readline doc
+>=media-libs/netpbm-11.2.22 png
+EOF
+
+cat > /etc/portage/env/qemu-targets.conf <<'EOF'
+QEMU_SOFTMMU_TARGETS="arm x86_64 sparc riscv32 riscv64"
+QEMU_USER_TARGETS="x86_64 arm riscv32 riscv64 sparc"
+EOF
+
+cat > /etc/portage/package.env/qemu <<'EOF'
+app-emulation/qemu qemu-targets.conf
+EOF
+
+echo "Syncing Portage tree..."
+emerge --sync
+
+echo "Installing packages..."
+emerge -av \
+    app-emulation/qemu \
+    app-emulation/virt-manager \
+    app-emulation/virt-viewer \
+    app-emulation/libvirt \
+    net-misc/bridge-utils \
+    net-dns/dnsmasq \
+    net-analyzer/openbsd-netcat \
+    app-emulation/libguestfs \
+    net-misc/vde
+
+echo "Configuring libvirt..."
+
+if [[ -f /etc/libvirt/libvirtd.conf ]]; then
+    sed -i \
+      -e 's/^#unix_sock_group = "libvirt"/unix_sock_group = "libvirt"/' \
+      -e 's/^#unix_sock_ro_perms = "0777"/unix_sock_ro_perms = "0777"/' \
+      -e 's/^#unix_sock_rw_perms = "0770"/unix_sock_rw_perms = "0770"/' \
+      /etc/libvirt/libvirtd.conf
+fi
+
+echo "Enabling libvirtd..."
+rc-update add libvirtd default
+
+echo "Starting libvirtd..."
+rc-service libvirtd start
+
+echo "Configuring default libvirt network..."
+if virsh net-info default >/dev/null 2>&1; then
+    virsh net-autostart default
+    virsh net-start default 2>/dev/null || true
+else
+    if [[ -f /usr/share/libvirt/networks/default.xml ]]; then
+        virsh net-define /usr/share/libvirt/networks/default.xml
+        virsh net-autostart default
+        virsh net-start default
+    fi
+fi
+
+REAL_USER="${SUDO_USER:-$(logname 2>/dev/null || true)}"
+
+if [[ -n "${REAL_USER}" ]]; then
+    echo "Adding ${REAL_USER} to libvirt and kvm groups..."
+    gpasswd -a "${REAL_USER}" libvirt
+    gpasswd -a "${REAL_USER}" kvm
+else
+    echo "Could not determine non-root user. Add yourself manually:"
+    echo "  gpasswd -a <user> libvirt"
+    echo "  gpasswd -a <user> kvm"
+fi
+
+echo
+echo "QEMU/KVM stack installation complete."
+echo
+echo "Log out and back in (or reboot) for new group memberships to take effect."
