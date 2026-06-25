@@ -66,6 +66,9 @@ install_packages() {
         x11-libs/libX11 \
         x11-libs/libXft \
         x11-libs/libXinerama \
+        x11-apps/xrandr \
+        x11-misc/xwallpaper \
+        x11-misc/xdotool \
         media-gfx/feh \
         x11-misc/picom \
         x11-misc/sxhkd \
